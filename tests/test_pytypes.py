@@ -419,8 +419,8 @@ def test_isinstance_string_types():
     # pybind11 isinstance
     assert m.isinstance_pybind11_bytes(actual_bytes)
     assert not m.isinstance_pybind11_bytes(actual_unicode)
-    assert not m.isinstance_pybind11_unicode(actual_bytes)
-    assert m.isinstance_pybind11_unicode(actual_unicode)
+    assert not m.isinstance_pybind11_str(actual_bytes)
+    assert m.isinstance_pybind11_str(actual_unicode)
 
 
 def test_pass_actual_bytes_or_unicode_to_string_types():
@@ -431,13 +431,13 @@ def test_pass_actual_bytes_or_unicode_to_string_types():
     with pytest.raises(TypeError):
         m.pass_to_pybind11_bytes(actual_unicode)  # NO implicit encode
 
-    assert m.pass_to_pybind11_unicode(actual_bytes) == 5  # implicit decode
-    assert m.pass_to_pybind11_unicode(actual_unicode) == 3
+    assert m.pass_to_pybind11_str(actual_bytes) == 5  # implicit decode
+    assert m.pass_to_pybind11_str(actual_unicode) == 3
 
     assert m.pass_to_std_string(actual_bytes) == 5
     assert m.pass_to_std_string(actual_unicode) == 3
 
     malformed_utf8 = b"\x80"
     with pytest.raises(UnicodeDecodeError) as excinfo:
-        m.pass_to_pybind11_unicode(malformed_utf8)
+        m.pass_to_pybind11_str(malformed_utf8)
     assert 'invalid start byte' in str(excinfo.value)

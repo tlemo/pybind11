@@ -240,6 +240,8 @@ TEST_SUBMODULE(pytypes, m) {
         );
     });
 
+    m.def("convert_to_pybind11_str", [](py::object o) { return py::str(o); });
+
     m.def("get_implicit_casting", []() {
         py::dict d;
         d["char*_i1"] = "abc";
@@ -377,6 +379,4 @@ TEST_SUBMODULE(pytypes, m) {
     m.def("pass_to_pybind11_bytes", [](py::bytes b) { return py::len(b); });
     m.def("pass_to_pybind11_unicode", [](py::str s) { return py::len(s); });
     m.def("pass_to_std_string", [](std::string s) { return s.size(); });
-
-    m.def("convert_to_pybind11_str", [](py::object o) { return py::str(o); });
 }

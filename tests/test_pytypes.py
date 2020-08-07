@@ -235,7 +235,7 @@ def test_pybind11_str_raw_str():
     # specifically to exercise pybind11::str::raw_str
     cvt = m.convert_to_pybind11_str
     assert cvt(u"Str") == u"Str"
-    assert cvt(b"Bytes") == u"Bytes" if str is bytes else "b'Bytes'"
+    assert cvt(b'Bytes') == u"Bytes" if str is bytes else "b'Bytes'"
     assert cvt(None) == u"None"
     assert cvt(False) == u"False"
     assert cvt(True) == u"True"
@@ -250,6 +250,16 @@ def test_pybind11_str_raw_str():
     assert cvt({3: 4}) == u"{3: 4}"
     assert cvt(set()) == u"set([])" if str is bytes else "set()"
     assert cvt({3, 3}) == u"set([3])" if str is bytes else "{3}"
+
+    valid_utf8 = u"Ǳ".encode("utf-8")
+    valid_cvt = cvt(valid_utf8)
+    assert type(valid_cvt) == bytes  # Probably surprising.
+    assert valid_cvt == b'\xc7\xb1'
+
+    malformed_utf8 = b'\x80'
+    malformed_cvt = cvt(malformed_utf8)
+    assert type(malformed_cvt) == bytes  # Probably surprising.
+    assert malformed_cvt == b'\x80'
 
 
 def test_implicit_casting():

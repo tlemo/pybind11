@@ -401,41 +401,23 @@ def test_memoryview_from_memory():
 
 
 def test_isinstance_string_types():
-    actual_bytes = b""
-    actual_unicode = u""
-    if str is bytes:
-        # Python 2: NOT same as native str, BUT same as pybind11::str
-        native_unicode_type = unicode  # noqa: F821
-    else:
-        # Python 3: same as pybind11::str
-        native_unicode_type = str
+    assert m.isinstance_pybind11_bytes(b"")
+    assert not m.isinstance_pybind11_bytes(u"")
 
-    # Native isinstance, for comparison with below.
-    assert isinstance(actual_bytes, bytes)
-    assert not isinstance(actual_unicode, bytes)
-    assert not isinstance(actual_bytes, native_unicode_type)
-    assert isinstance(actual_unicode, native_unicode_type)
-
-    # pybind11 isinstance
-    assert m.isinstance_pybind11_bytes(actual_bytes)
-    assert not m.isinstance_pybind11_bytes(actual_unicode)
-    assert not m.isinstance_pybind11_str(actual_bytes)
-    assert m.isinstance_pybind11_str(actual_unicode)
+    assert m.isinstance_pybind11_str(u"")
+    assert not m.isinstance_pybind11_str(b"")
 
 
-def test_pass_actual_bytes_or_unicode_to_string_types():
-    actual_bytes = b"Bytes"
-    actual_unicode = u"Str"
-
-    assert m.pass_to_pybind11_bytes(actual_bytes) == 5
+def test_pass_bytes_or_unicode_to_string_types():
+    assert m.pass_to_pybind11_bytes(b"Bytes") == 5
     with pytest.raises(TypeError):
-        m.pass_to_pybind11_bytes(actual_unicode)  # NO implicit encode
+        m.pass_to_pybind11_bytes(u"Str")  # NO implicit encode
 
-    assert m.pass_to_pybind11_str(actual_bytes) == 5  # implicit decode
-    assert m.pass_to_pybind11_str(actual_unicode) == 3
+    assert m.pass_to_pybind11_str(b"Bytes") == 5  # implicit decode
+    assert m.pass_to_pybind11_str(u"Str") == 3
 
-    assert m.pass_to_std_string(actual_bytes) == 5
-    assert m.pass_to_std_string(actual_unicode) == 3
+    assert m.pass_to_std_string(b"Bytes") == 5
+    assert m.pass_to_std_string(u"Str") == 3
 
     malformed_utf8 = b"\x80"
     with pytest.raises(UnicodeDecodeError) as excinfo:

@@ -251,15 +251,24 @@ def test_pybind11_str_raw_str():
     assert cvt(set()) == u"set([])" if str is bytes else "set()"
     assert cvt({3, 3}) == u"set([3])" if str is bytes else "{3}"
 
-    valid_utf8 = u"Ǳ".encode("utf-8")
+    valid_orig = u"Ǳ"
+    valid_utf8 = valid_orig.encode("utf-8")
     valid_cvt = cvt(valid_utf8)
-    assert type(valid_cvt) == bytes  # Probably surprising.
-    assert valid_cvt == b'\xc7\xb1'
+    assert type(valid_cvt) == type(u"")  # Py2 unicode, Py3 str, flake8 compatible
+    if str is bytes:
+        assert valid_cvt == valid_orig
+    else:
+        assert valid_cvt == u"b'\\xc7\\xb1'"
 
     malformed_utf8 = b'\x80'
-    malformed_cvt = cvt(malformed_utf8)
-    assert type(malformed_cvt) == bytes  # Probably surprising.
-    assert malformed_cvt == b'\x80'
+    if str is bytes:
+        with pytest.raises(UnicodeDecodeError) as excinfo:
+            cvt(malformed_utf8)
+        assert "invalid start byte" in str(excinfo)
+    else:
+        malformed_cvt = cvt(malformed_utf8)
+        assert type(valid_cvt) == type(u"")
+        assert malformed_cvt == u"b'\\x80'"
 
 
 def test_implicit_casting():
